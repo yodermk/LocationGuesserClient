@@ -37,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // other general setup
     state = 1;
+    currentMap = 0;
     connect(ui->txtName, SIGNAL(textChanged(QString)), this, SLOT(updateName(QString)));
 
     // get list of challenges
@@ -48,8 +49,11 @@ MainWindow::MainWindow(QWidget *parent) :
         maps << challenges.value(0).toString();
 
     nam = new QNetworkAccessManager(this);
-    connect(nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(nextMap()));
+    connect(nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(rcvMap(QNetworkReply*)));
     QTimer::singleShot(50, this, SLOT(nextMap()));
+
+    // connection for map clicking
+    connect(ui->mapImg, SIGNAL(clicked(QMouseEvent*)), this, SLOT(mapClicked(QMouseEvent*)));
 }
 
 MainWindow::~MainWindow()
@@ -60,7 +64,13 @@ MainWindow::~MainWindow()
 
 void MainWindow::notificationReceived()
 {
-    qDebug() << QString("signal!");
+    if (state == 1) {
+        // game is just starting!
+        ui->stackedWidget->setCurrentIndex(1); // activate map pane
+        state = 2;
+    }
+    ui->mapImg->setPixmap(mapImages[currentMap]);
+    measureTimer = QTime::currentTime();
 }
 
 void MainWindow::updateName(QString n)
@@ -80,8 +90,20 @@ void MainWindow::nextMap()
     }
 }
 
-void MainWindow::rcvMap(QNetworkReply *)
+void MainWindow::rcvMap(QNetworkReply *r)
 {
-
+    QPixmap img;
+    img.loadFromData(r->readAll());
+    mapImages << img;
     QTimer::singleShot(50, this, SLOT(nextMap()));
+}
+
+void MainWindow::mapClicked(QMouseEvent *e)
+{
+    qDebug() << QString("clicked! (%1 %2)").arg(e->x()).arg(e->y());
+    QTime clickReceived = QTime::currentTime();
+    int msecs = measureTimer.msecsTo(clickReceived);
+    QSqlQuery sendClick;
+    sendClick.prepare("INSERT INTO answers (qset, challenge, player, guess, seconds) VALUES"
+                      "(:game, :)")
 }

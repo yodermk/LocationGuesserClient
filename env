@@ -1,0 +1,25 @@
+# Example of the environment variables which must be set
+# It is expected that this will all be set via an ansible playbook
+# on the host computer.
+# No error checking is currently done in the code on any of this.
+# If you set it, it should work. If you don't, it won't.
+
+# PostgreSQL hostname, database name, and user. It is assumed
+# to not need a password, because of trust authentication (probably)
+# or maybe "peer".  I don't consider this a problem; the software
+# should only be run on isolated local networks in complete
+# control by the emcee.
+export DBHOSTNAME=127.0.0.1
+export DBDBNAME=locationguesser
+export DBUSERNAME=micah
+
+# Each game run should have a row of laptops sequentially numbered 1..x
+# Make sure this value is unique.
+export PLAYER=1
+
+# Determines the question set that will be used.
+export GAME=1
+
+# Web server URL for the maps. This MUST end with a trailing slash.
+export BASEMAPURL=http://localhost/maps/
+

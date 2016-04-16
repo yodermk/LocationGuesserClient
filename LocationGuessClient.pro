@@ -13,9 +13,11 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    clickablemap.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    clickablemap.h
 
 FORMS    += mainwindow.ui
 
