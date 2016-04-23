@@ -76,7 +76,8 @@ void MainWindow::notificationReceived()
 void MainWindow::updateName(QString n)
 {
     QSqlQuery update;
-    update.prepare("UPDATE players SET name=:name where num=:num");
+    update.prepare("INSERT INTO players (num, name) VALUES (:num, :name) "
+                   "ON CONFLICT (num) DO UPDATE SET name=:name");
     update.bindValue(":name", n);
     update.bindValue(":num", player);
     update.exec();
@@ -105,5 +106,13 @@ void MainWindow::mapClicked(QMouseEvent *e)
     int msecs = measureTimer.msecsTo(clickReceived);
     QSqlQuery sendClick;
     sendClick.prepare("INSERT INTO answers (qset, challenge, player, guess, seconds) VALUES"
-                      "(:game, :)")
+                      "(:game, :currentMap, :player, :point, (:time || ' seconds')::interval)"
+                      " ON CONFLICT (qset, challenge, player) DO UPDATE SET "
+                      "guess=:point, seconds=(:time || ' seconds')::interval");
+    sendClick.bindValue(":game", game);
+    sendClick.bindValue(":currentMap", currentMap);
+    sendClick.bindValue(":player", player);
+    sendClick.bindValue(":point", QString("(%1, %2)").arg(e->x()).arg(e->y()));
+    sendClick.bindValue(":time", float(msecs)/1000);
+    sendClick.exec();
 }
